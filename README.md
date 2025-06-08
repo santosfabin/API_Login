@@ -1,6 +1,6 @@
 # Projeto Backend - API de Gerenciamento de Notas
 
-Este é o repositório do backend para a API de gerenciamento de notas. Ele foi desenvolvido com Node.js, TypeScript, Express e PostgreSQL, e é executado em containers Docker para facilitar o desenvolvimento e a implantação.
+Este é o repositório do backend para a API de gerenciamento de login e usuário. Ele foi desenvolvido com Node.js, TypeScript, Express e PostgreSQL, e é executado em containers Docker para facilitar o desenvolvimento e a implantação.
 
 ## Sumário
 
@@ -83,7 +83,7 @@ Antes de começar, certifique-se de ter as seguintes ferramentas instaladas em s
 
 Siga os passos abaixo para configurar e rodar o ambiente Docker para o backend e o banco de dados.
 
-1. Criação da Rede Docker
+### 1. Criação da Rede Docker
 Primeiro, crie uma rede Docker para permitir que os containers do PostgreSQL e do Backend se comuniquem.
 
 ```bash
@@ -91,7 +91,8 @@ docker network create minha-rede-backend
 ```
 
 Explicação: O comando docker network create cria uma rede do tipo "bridge" personalizada. Isso é essencial para que os containers possam se encontrar e comunicar entre si usando seus nomes (aliases) em vez de IPs dinâmicos.
-2. Execução do Container PostgreSQL
+
+### 2. Execução do Container PostgreSQL
 Execute um container PostgreSQL a partir da imagem bitnami/postgresql e conecte-o à rede que você acabou de criar.
 
 ```bash
@@ -106,6 +107,7 @@ docker run -d \
   bitnami/postgresql:latest
 ```
 
+```text
 -d: Roda o container em modo "detached" (em segundo plano).
 --name meu-postgres: Atribui o nome meu-postgres ao container, facilitando o gerenciamento.
 --network minha-rede-backend: Conecta o container à rede que criamos.
@@ -115,7 +117,9 @@ docker run -d \
 -e POSTGRESQL_PASSWORD=minhasenha: Define a senha do PostgreSQL.
 -e POSTGRESQL_DATABASE=meubanco: Define o nome do banco de dados inicial.
 bitnami/postgresql:latest: A imagem Docker a ser utilizada.
-3. Configuração do Schema do Banco de Dados
+```
+
+### 3. Configuração do Schema do Banco de Dados
 Após o container PostgreSQL estar rodando, você precisa criar a estrutura (schema) das tabelas que sua aplicação utiliza.
 
 Acesse o shell do container PostgreSQL:
@@ -160,7 +164,7 @@ Saia do prompt do PostgreSQL e do shell do container:
 ```text
 exit
 ```
-4. Construção da Imagem Docker do Backend
+### 4. Construção da Imagem Docker do Backend
 Navegue até a pasta raiz do seu projeto backend (onde o Dockerfile e o package.json estão localizados).
 
 Dockerfile:
@@ -191,10 +195,12 @@ Comando para Construir a Imagem:
 ```bash
 docker build -t meu-backend-api .
 ```
+
+```text
 -t meu-backend-api: Atribui a tag meu-backend-api à sua imagem.
 
 .: Indica que o contexto da construção da imagem é o diretório atual.
-
+```
 .dockerignore: Certifique-se de que seu arquivo .dockerignore contenha as entradas necessárias para evitar copiar arquivos desnecessários (como node_modules e .env) para a imagem final, mantendo-a leve e segura.
 
 Exemplo de .dockerignore:
@@ -206,7 +212,7 @@ dist/      # Se você não precisa da pasta dist na imagem para dev
 .git/
 *.log
 ```
-5. Execução do Container do Backend
+### 5. Execução do Container do Backend
 Execute o container do backend, conectando-o à rede Docker e passando as variáveis de ambiente necessárias. Este comando é otimizado para desenvolvimento, usando bind mounts e nodemon.
 
 ```bash
@@ -226,6 +232,8 @@ docker run -d \
   -e NODE_ENV=development \
   meu-backend-api
 ```
+
+```text
 -d: Roda o container em modo "detached".
 --name minha-api-dev: Nomeia o container do backend.
 --network minha-rede-backend: Conecta o container à rede Docker.
@@ -235,6 +243,7 @@ docker run -d \
 -e ...: Passa as variáveis de ambiente necessárias para a sua aplicação se conectar ao PostgreSQL e configurar sua porta e chave secreta. Lembre-se de usar db-host para DB_HOST e substituir os valores de credenciais e chave secreta.
 -e NODE_ENV=development: Define a variável de ambiente NODE_ENV para "development", o que pode ativar funcionalidades específicas de desenvolvimento na sua aplicação.
 meu-backend-api: O nome da imagem que você construiu.
+```
 Verificando o Status do Backend
 Acessando os Logs do Backend
 Para ver o que está acontecendo dentro do container do seu backend, incluindo mensagens de inicialização, erros e logs de requisições:
@@ -242,9 +251,14 @@ Para ver o que está acontecendo dentro do container do seu backend, incluindo m
 ```bash
 docker logs -f minha-api-dev
 ```
+
+
+```text
 docker logs: Comando para exibir os logs de um container.
 -f: (Follow) Segue os logs em tempo real, exibindo novas linhas à medida que são geradas. Pressione Ctrl+C para sair.
 minha-api-dev: O nome do seu container do backend.
+```
+
 Verificando Usuários no Banco de Dados
 Para confirmar se os usuários cadastrados pela API estão sendo persistidos no banco de dados:
 
@@ -271,9 +285,11 @@ Saia do prompt do PostgreSQL e do shell do container:
 ```text
 exit
 ```
-Rotas da API
+### Rotas da API
 A API está acessível na porta 7000 em seu host (http://localhost:7000). Todas as rotas estão prefixadas com /api/.
 
+
+```text
 Autenticação e Usuários
 POST /api/users/ - Cadastro de Usuário
 Descrição: Registra um novo usuário no sistema.
@@ -282,6 +298,8 @@ URL: http://localhost:7000/api/users/
 Headers:
 Content-Type: application/json
 Body (raw, JSON):
+```
+
 ```json
 {
     "name": "Nome do Usuário",
@@ -297,6 +315,8 @@ Retorno (Status: 201 Created ou 200 OK):
     "email": "email@example.com"
 }
 ```
+
+```text
 POST /api/login/ - Login de Usuário
 Descrição: Autentica um usuário e retorna um cookie de sessão.
 Método: POST
@@ -304,6 +324,8 @@ URL: http://localhost:7000/api/login/
 Headers:
 Content-Type: application/json
 Body (raw, JSON):
+```
+
 ```json
 {
     "email": "email@example.com",
@@ -317,24 +339,32 @@ Retorno (Status: 200 OK):
 }
 ```
 Cookies: Um cookie token (ou sessionID) será retornado. Este cookie é necessário para acessar rotas autenticadas.
+
+```text
 DELETE /api/logout/ - Logout de Usuário
 Descrição: Invalida a sessão do usuário.
 Método: DELETE
 URL: http://localhost:7000/api/logout/
 Headers:
 Cookies: Envie o cookie de sessão (token) recebido no login.
+```
+
 Retorno (Status: 200 OK ou 204 No Content):
 ```json
 {
     "message": "Logout realizado com sucesso."
 }
 ```
+
+```text
 GET /api/users/ - Listar Todos os Usuários (Autenticada)
 Descrição: Retorna uma lista de todos os usuários cadastrados.
 Método: GET
 URL: http://localhost:7000/api/users/
 Headers:
 Cookies: Envie o cookie de sessão (token).
+```
+
 Retorno (Status: 200 OK):
 ```json
 [
@@ -350,6 +380,9 @@ Retorno (Status: 200 OK):
     }
 ]
 ```
+
+
+```text
 PATCH /api/users/:id - Atualizar Usuário (Autenticada)
 Descrição: Atualiza as informações de um usuário específico.
 Método: PATCH
@@ -357,7 +390,10 @@ URL: http://localhost:7000/api/users/UUID_DO_USUARIO (substitua UUID_DO_USUARIO 
 Headers:
 Content-Type: application/json
 Cookies: Envie o cookie de sessão (token).
+```
+
 Body (raw, JSON - campos opcionais):
+
 ```json
 {
     "name": "Novo Nome",
@@ -373,12 +409,16 @@ Retorno (Status: 200 OK):
     "email": "novo.email@example.com"
 }
 ```
+
+```text
 DELETE /api/users/:id - Remover Usuário (Autenticada)
 Descrição: Remove um usuário específico do sistema.
 Método: DELETE
 URL: http://localhost:7000/api/users/UUID_DO_USUARIO (substitua UUID_DO_USUARIO pelo ID real)
 Headers:
 Cookies: Envie o cookie de sessão (token).
+```text
+
 Retorno (Status: 200 OK):
 ```json
 {
@@ -388,6 +428,7 @@ Retorno (Status: 200 OK):
 Notas (Exemplo - Adicione conforme seu projeto)
 (Se você tem rotas de notas, adicione-as aqui. Exemplo abaixo):
 
+```text
 POST /api/notes/ - Criar Nova Nota (Autenticada)
 Descrição: Cria uma nova nota associada ao usuário autenticado.
 Método: POST
@@ -395,6 +436,8 @@ URL: http://localhost:7000/api/notes/
 Headers:
 Content-Type: application/json
 Cookies: Envie o cookie de sessão (token).
+```
+
 Body (raw, JSON):
 ```json
 {
@@ -412,12 +455,16 @@ Retorno (Status: 201 Created ou 200 OK):
     "created_at": "2024-01-01T10:00:00.000Z"
 }
 ```
+
+```text
 GET /api/notes/ - Listar Todas as Notas (Autenticada)
 Descrição: Retorna todas as notas do usuário autenticado.
 Método: GET
 URL: http://localhost:7000/api/notes/
 Headers:
 Cookies: Envie o cookie de sessão (token).
+```
+
 Retorno (Status: 200 OK):
 ```json
 [
@@ -435,12 +482,16 @@ Retorno (Status: 200 OK):
     }
 ]
 ```
+
+```text
 GET /api/notes/:id - Obter Nota por ID (Autenticada)
 Descrição: Retorna uma nota específica pelo seu ID.
 Método: GET
 URL: http://localhost:7000/api/notes/UUID_DA_NOTA (substitua UUID_DA_NOTA pelo ID real)
 Headers:
 Cookies: Envie o cookie de sessão (token).
+```
+
 Retorno (Status: 200 OK):
 ```json
 {
@@ -450,6 +501,8 @@ Retorno (Status: 200 OK):
     "content": "Conteúdo da nota."
 }
 ```
+
+```text
 PATCH /api/notes/:id - Atualizar Nota (Autenticada)
 Descrição: Atualiza uma nota específica.
 Método: PATCH
@@ -457,6 +510,8 @@ URL: http://localhost:7000/api/notes/UUID_DA_NOTA (substitua UUID_DA_NOTA pelo I
 Headers:
 Content-Type: application/json
 Cookies: Envie o cookie de sessão (token).
+```
+
 Body (raw, JSON - campos opcionais):
 ```json
 {
@@ -473,12 +528,16 @@ Retorno (Status: 200 OK):
     "content": "Conteúdo atualizado."
 }
 ```
+
+```text
 DELETE /api/notes/:id - Remover Nota (Autenticada)
 Descrição: Remove uma nota específica.
 Método: DELETE
 URL: http://localhost:7000/api/notes/UUID_DA_NOTA (substitua UUID_DA_NOTA pelo ID real)
 Headers:
 Cookies: Envie o cookie de sessão (token).
+```
+
 Retorno (Status: 200 OK):
 ```json
 {
@@ -525,18 +584,3 @@ Remova a rede Docker:
 ```bash
 docker network rm minha-rede-backend
 ```
-
-docker rm: Remove containers.
-docker rmi: Remove imagens.
-docker volume rm: Remove volumes de dados.
-docker network rm: Remove redes.
-Estrutura de Pastas
-Uma breve descrição da estrutura de pastas para ajudar na navegação:
-
-src/: Contém todo o código-fonte da aplicação TypeScript.
-app.ts: Ponto de entrada principal do aplicativo Express.
-routes/: Define os endpoints da API e agrupa as rotas.
-controllers/: Contém a lógica de tratamento das requisições para cada rota.
-services/: Abriga a lógica de negócio e interação com o banco de dados.
-middleware/: Funções executadas antes ou depois dos manipuladores de rota (ex: autenticação, validação).
-database/: Contém a configuração de conexão com o PostgreSQL.
